@@ -5,6 +5,24 @@ from urllib.parse import urlparse
 
 import streamlit as st
 
+# ---- Simple access gate (passcode) ----
+if "authed" not in st.session_state:
+    st.session_state.authed = False
+
+ACCESS_CODE = st.secrets.get("ACCESS_CODE", "")
+if ACCESS_CODE:  # attivo solo se c'è un codice nei Secrets
+    if not st.session_state.authed:
+        st.sidebar.header("🔒 Accesso")
+        user_code = st.sidebar.text_input("Access code", type="password")
+        if st.sidebar.button("Entra"):
+            if user_code == ACCESS_CODE:
+                st.session_state.authed = True
+                st.experimental_rerun()
+            else:
+                st.sidebar.error("Codice non valido.")
+        st.stop()  # blocca il resto dell’app finché non è autenticato
+
+
 # -----------------------------
 # Config & helpers
 # -----------------------------
