@@ -189,9 +189,9 @@ st.markdown(
 
 with st.sidebar:
     st.header("Parametri")
-    query = st.text_input("Query di ricerca (IT)", value="frigoriferi da incasso")
-    my_domain = st.text_input("Tuo dominio (es. smeg.com)", value="smeg.com")
-    my_url = st.text_input("Tua pagina (URL preciso, opzionale)", value="")
+    query = st.text_input("Query di ricerca (IT)", value="offerte lavoro milano")
+    my_domain = st.text_input("Tuo dominio (es. smeg.com)", value="randstad.it")
+    my_url = st.text_input("Tua pagina (URL preciso, opzionale)", value="https://www.randstad.it/offerte-lavoro/re-lombardia/ci-milano/")
     st.divider()
     use_semrush = st.checkbox("Aggiungi keyword per URL (SEMrush)", value=True)
     use_topics = st.checkbox("Estrai temi con AI (OpenAI)", value=True)
