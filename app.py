@@ -181,7 +181,7 @@ st.markdown(
     f"""
     <div style="display:flex;align-items:center;gap:12px;margin-top:-8px;margin-bottom:12px;">
       <img src="{LOGO_URL}" alt="Moca Interactive" style="height:40px;">
-      <h1 style="margin:0;font-weight:800;">Moca SERP gap</h1>
+      <h1 style="margin:0;font-weight:800;">SERP gap</h1>
     </div>
     """,
     unsafe_allow_html=True
