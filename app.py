@@ -1,10 +1,9 @@
 import os
 import io
-import time
 from urllib.parse import urlparse
 
 import requests
-import pandas as pdf
+import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 
@@ -30,8 +29,7 @@ if ACCESS_CODE and not st.session_state.authed:
             try:
                 st.rerun()
             except AttributeError:
-                st.experimental_rerun()  # per versioni più vecchie
-
+                st.experimental_rerun()  # compat vecchie versioni
         else:
             st.sidebar.error("Codice non valido.")
     st.stop()
@@ -126,8 +124,8 @@ def semrush_keywords_by_url(page_url: str, db: str = "it", limit: int = 500) -> 
                "Keyword": "Keyword", "Position": "Position", "Volume": "Volume", "Url": "URL"}
     df = df.rename(columns=col_map)
     if "Position" in df.columns: df = df[df["Position"] <= 20]
-    if "Volume" in df.columns:   df = df[df["Volume"] >= 20]
-    if "Volume" in df.columns:   df = df.sort_values(["Position", "Volume"], ascending=[True, False])
+    if "Volume"  in df.columns: df = df[df["Volume"] >= 20]
+    if "Volume"  in df.columns: df = df.sort_values(["Position", "Volume"], ascending=[True, False])
     return df.reset_index(drop=True)
 
 # =========================
@@ -177,14 +175,15 @@ def extract_topics_with_openai(url: str, model: str = "gpt-4o-mini") -> list[str
 # =========================
 # UI
 # =========================
-st.set_page_config(page_title="Moca SERP Gap", page_icon=FAVICON_URL, layout="wide")
+st.set_page_config(page_title="Moca SERP gap", page_icon=FAVICON_URL, layout="wide")
 st.markdown(
     f"""
     <div style="display:flex;align-items:center;gap:12px;margin-top:-8px;margin-bottom:12px;">
       <img src="{LOGO_URL}" alt="Moca Interactive" style="height:40px;">
-      <h1 style="margin:0;font-weight:800;">Moca SERP Gap</h1>
+      <h1 style="margin:0;font-weight:800;">Moca SERP gap</h1>
     </div>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 with st.sidebar:
@@ -269,63 +268,4 @@ if run:
                             st.markdown("**Temi principali (AI)**")
                             st.write(", ".join(topics))
                             if not (my_url and url == my_url):
-                                competitor_topic_union.update(t.lower() for t in topics)
-                        else:
-                            st.info("Temi non disponibili (blocco/fetch fallito o limiti pagina).")
-
-                # avanza progress bar in modo proporzionale
-                progress.progress(20 + int((idx + 1) / len(df) * 60))
-
-    # 3) Calcolo gap (keyword + topic)
-    with gap_tab:
-        st.subheader("Analisi Gap (pagina vs Top10)")
-
-        # Keyword gap
-        if use_semrush and my_url:
-            try:
-                my_df = semrush_keywords_by_url(my_url)
-                if not my_df.empty:
-                    my_kw_set = set(my_df["Keyword"].astype(str).str.lower())
-                    kw_gap = sorted(list(competitor_kw_union - my_kw_set))
-                    st.markdown("### Keyword Gap")
-                    st.markdown(f"- Tua pagina: **{my_url}**")
-                    st.markdown(f"- Keyword tue (pos ≤20, vol ≥20): **{len(my_kw_set)}**")
-                    st.markdown(f"- Keyword competitor aggregate: **{len(competitor_kw_union)}**")
-                    st.markdown(f"- **Gap potenziale:** {len(kw_gap)} keyword non coperte")
-                    if kw_gap:
-                        st.dataframe(pd.DataFrame({"Keyword gap": kw_gap}),
-                                     use_container_width=True, height=280)
-                else:
-                    st.info("La tua pagina non ha keyword idonee (pos≤20 & vol≥20) o la chiamata è vuota.")
-            except Exception as e:
-                st.warning(f"SEMrush (tua pagina) errore: {e}")
-
-        # Topic gap
-        if use_topics and my_url:
-            st.markdown("### Topic Gap")
-            my_topics = extract_topics_with_openai(my_url)
-            if my_topics:
-                my_topics_set = set(t.lower() for t in my_topics)
-                topic_gap = sorted([t for t in competitor_topic_union - my_topics_set])
-                cols = st.columns(2)
-                with cols[0]:
-                    st.markdown("**Temi rilevati nella tua pagina**")
-                    st.write(", ".join(my_topics))
-                with cols[1]:
-                    st.markdown("**Temi ricorrenti nei competitor (unione)**")
-                    st.write(", ".join(sorted(competitor_topic_union)) if competitor_topic_union else "—")
-                st.markdown(f"**Topic non coperti:** {len(topic_gap)}")
-                if topic_gap:
-                    st.dataframe(pd.DataFrame({"Topic gap": topic_gap}),
-                                 use_container_width=True, height=280)
-            else:
-                st.info("Non sono riuscito a estrarre temi dalla tua pagina.")
-
-    # 4) Export
-    with export_tab:
-        st.subheader("Esporta SERP")
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("⬇️ Scarica CSV SERP", data=csv, file_name="serp_top10_it.csv", mime="text/csv")
-
-    progress.progress(100)
-    st.success("Analisi completata ✅")
+                                competitor_topic_unio
