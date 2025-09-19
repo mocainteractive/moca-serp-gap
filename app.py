@@ -4,6 +4,7 @@ import pandas as pd
 from urllib.parse import urlparse
 
 import streamlit as st
+import io
 
 # ---- Simple access gate (passcode) ----
 if "authed" not in st.session_state:
