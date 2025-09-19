@@ -4,7 +4,7 @@ import time
 from urllib.parse import urlparse
 
 import requests
-import pandas as pd
+import pandas as pdf
 import streamlit as st
 from bs4 import BeautifulSoup
 
@@ -27,7 +27,11 @@ if ACCESS_CODE and not st.session_state.authed:
     if st.sidebar.button("Entra"):
         if code_in == ACCESS_CODE:
             st.session_state.authed = True
-            st.experimental_rerun()
+            try:
+                st.rerun()
+            except AttributeError:
+                st.experimental_rerun()  # per versioni più vecchie
+
         else:
             st.sidebar.error("Codice non valido.")
     st.stop()
