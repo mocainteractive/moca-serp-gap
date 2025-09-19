@@ -177,12 +177,12 @@ def extract_topics_with_openai(url: str, model: str = "gpt-4o-mini") -> list[str
 # =========================
 # UI
 # =========================
-st.set_page_config(page_title="Moca SERP Gap (IT) — Step 1", page_icon=FAVICON_URL, layout="wide")
+st.set_page_config(page_title="Moca SERP Gap", page_icon=FAVICON_URL, layout="wide")
 st.markdown(
     f"""
     <div style="display:flex;align-items:center;gap:12px;margin-top:-8px;margin-bottom:12px;">
       <img src="{LOGO_URL}" alt="Moca Interactive" style="height:40px;">
-      <h1 style="margin:0;font-weight:800;">Moca SERP Gap (IT) — Step 1</h1>
+      <h1 style="margin:0;font-weight:800;">Moca SERP Gap</h1>
     </div>
     """, unsafe_allow_html=True
 )
