@@ -123,9 +123,12 @@ def semrush_keywords_by_url(page_url: str, db: str = "it", limit: int = 500) -> 
     col_map = {"Ph": "Keyword", "Po": "Position", "Nq": "Volume", "Ur": "URL",
                "Keyword": "Keyword", "Position": "Position", "Volume": "Volume", "Url": "URL"}
     df = df.rename(columns=col_map)
-    if "Position" in df.columns: df = df[df["Position"] <= 20]
-    if "Volume"  in df.columns: df = df[df["Volume"] >= 20]
-    if "Volume"  in df.columns: df = df.sort_values(["Position", "Volume"], ascending=[True, False])
+    if "Position" in df.columns:
+        df = df[df["Position"] <= 20]
+    if "Volume" in df.columns:
+        df = df[df["Volume"] >= 20]
+    if "Volume" in df.columns:
+        df = df.sort_values(["Position", "Volume"], ascending=[True, False])
     return df.reset_index(drop=True)
 
 # =========================
@@ -229,8 +232,10 @@ if run:
 
     with serp_tab:
         st.subheader("Top 10 organica (IT)")
-        st.dataframe(df[["Pos", "È il mio sito?", "Titolo", "Snippet", "URL", "Dominio"]],
-                     use_container_width=True)
+        st.dataframe(
+            df[["Pos", "È il mio sito?", "Titolo", "Snippet", "URL", "Dominio"]],
+            use_container_width=True
+        )
         mine = (df["È il mio sito?"] == "✅").sum()
         st.markdown(f"**Copertura attuale:** {mine}/10 risultati appartengono a **{my_dom_norm or my_domain}**.")
 
@@ -252,8 +257,11 @@ if run:
                             kws = semrush_keywords_by_url(url)
                             if not kws.empty:
                                 st.markdown(f"**Keyword (pos ≤20, vol ≥20)** — {len(kws)} trovate")
-                                st.dataframe(kws[["Keyword", "Position", "Volume"]],
-                                             use_container_width=True, height=260)
+                                st.dataframe(
+                                    kws[["Keyword", "Position", "Volume"]],
+                                    use_container_width=True,
+                                    height=260
+                                )
                                 if not (my_url and url == my_url):
                                     competitor_kw_union.update(kws["Keyword"].astype(str).str.lower())
                             else:
@@ -268,4 +276,69 @@ if run:
                             st.markdown("**Temi principali (AI)**")
                             st.write(", ".join(topics))
                             if not (my_url and url == my_url):
-                                competitor_topic_unio
+                                competitor_topic_union.update(t.lower() for t in topics)
+                        else:
+                            st.info("Temi non disponibili (blocco/fetch fallito o limiti pagina).")
+
+                # avanzamento progress bar proporzionale
+                progress.progress(20 + int((idx + 1) / len(df) * 60))
+
+    # 3) Calcolo gap (keyword + topic)
+    with gap_tab:
+        st.subheader("Analisi Gap (pagina vs Top10)")
+
+        # Keyword gap
+        if use_semrush and my_url:
+            try:
+                my_df = semrush_keywords_by_url(my_url)
+                if not my_df.empty:
+                    my_kw_set = set(my_df["Keyword"].astype(str).str.lower())
+                    kw_gap = sorted(list(competitor_kw_union - my_kw_set))
+                    st.markdown("### Keyword Gap")
+                    st.markdown(f"- Tua pagina: **{my_url}**")
+                    st.markdown(f"- Keyword tue (pos ≤20, vol ≥20): **{len(my_kw_set)}**")
+                    st.markdown(f"- Keyword competitor aggregate: **{len(competitor_kw_union)}**")
+                    st.markdown(f"- **Gap potenziale:** {len(kw_gap)} keyword non coperte")
+                    if kw_gap:
+                        st.dataframe(
+                            pd.DataFrame({"Keyword gap": kw_gap}),
+                            use_container_width=True,
+                            height=280
+                        )
+                else:
+                    st.info("La tua pagina non ha keyword idonee (pos≤20 & vol≥20) o la chiamata è vuota.")
+            except Exception as e:
+                st.warning(f"SEMrush (tua pagina) errore: {e}")
+
+        # Topic gap
+        if use_topics and my_url:
+            st.markdown("### Topic Gap")
+            my_topics = extract_topics_with_openai(my_url)
+            if my_topics:
+                my_topics_set = set(t.lower() for t in my_topics)
+                topic_gap = sorted([t for t in competitor_topic_union - my_topics_set])
+                cols = st.columns(2)
+                with cols[0]:
+                    st.markdown("**Temi rilevati nella tua pagina**")
+                    st.write(", ".join(my_topics))
+                with cols[1]:
+                    st.markdown("**Temi ricorrenti nei competitor (unione)**")
+                    st.write(", ".join(sorted(competitor_topic_union)) if competitor_topic_union else "—")
+                st.markdown(f"**Topic non coperti:** {len(topic_gap)}")
+                if topic_gap:
+                    st.dataframe(
+                        pd.DataFrame({"Topic gap": topic_gap}),
+                        use_container_width=True,
+                        height=280
+                    )
+            else:
+                st.info("Non sono riuscito a estrarre temi dalla tua pagina.")
+
+    # 4) Export
+    with export_tab:
+        st.subheader("Esporta SERP")
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Scarica CSV SERP", data=csv, file_name="serp_top10_it.csv", mime="text/csv")
+
+    progress.progress(100)
+    st.success("Analisi completata ✅")
